@@ -1,0 +1,189 @@
+@import "tailwindcss";
+
+@theme {
+  --color-pink: #f5c6d2;
+  --color-blush: #fff1f1;
+  --color-lilac: #d8b3e8;
+  --color-lilac-light: #f0e7f5;
+  --color-rose: #9c304d;
+  --color-burgundy: #562737;
+  --color-ivory: #fffaf6;
+  --color-neutral: #f7f5f2;
+  --color-charcoal: #30262b;
+  --color-muted: #735b64;
+  --color-line: #e9d3d5;
+  --font-sans: "Segoe UI", Arial, sans-serif;
+  --font-display: Georgia, "Times New Roman", serif;
+}
+
+@layer base {
+  :root {
+    font-family: var(--font-sans);
+    color: var(--color-charcoal);
+    background: var(--color-ivory);
+    color-scheme: light;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+  }
+  body { margin: 0; min-width: 320px; }
+  button, select, a { -webkit-tap-highlight-color: transparent; }
+  :focus-visible { outline: 2px solid var(--color-rose); outline-offset: 5px; }
+  ::selection { background: var(--color-pink); color: var(--color-charcoal); }
+}
+
+@layer components {
+  .page-container { @apply mx-auto w-full max-w-7xl px-5 sm:px-8 lg:px-12; }
+  .eyebrow { @apply text-xs leading-5 font-medium tracking-[0.14em] text-rose; }
+  .nav-link { @apply inline-flex min-h-11 items-center border-b border-transparent text-sm text-charcoal hover:text-rose; }
+  .nav-link-active { @apply border-rose text-rose; }
+  .button-primary { @apply inline-flex min-h-12 items-center justify-center gap-3 rounded-full bg-rose px-6 py-3 text-sm font-semibold text-white hover:bg-burgundy; }
+  .button-outline { @apply inline-flex min-h-12 items-center justify-center rounded-full border border-rose bg-ivory px-6 py-3 text-sm font-semibold text-burgundy hover:bg-blush; }
+  .text-link { @apply inline-flex min-h-11 items-center gap-3 text-sm font-semibold text-burgundy underline-offset-4 hover:underline; }
+  .section-space { @apply py-12 sm:py-14 lg:py-16; }
+  .section-heading { @apply mb-7 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end; }
+  .section-title { @apply mt-2 font-display text-3xl leading-[1.12] text-burgundy sm:text-4xl; letter-spacing: -0.035em; text-wrap: balance; }
+  .skip-link { @apply fixed top-3 left-3 z-50 -translate-y-32 rounded-md bg-charcoal px-5 py-3 text-ivory focus:translate-y-0; }
+
+  .brand { @apply inline-flex shrink-0 flex-col items-center text-center text-charcoal; }
+  .brand-bow { @apply -mb-2 h-6 w-12 text-rose; }
+  .brand-name { @apply font-display text-3xl leading-none tracking-[0.22em]; padding-left: 0.22em; }
+  .brand-caption { @apply mt-2 text-[0.55rem] tracking-[0.4em]; padding-left: 0.4em; }
+  .public-header { @apply relative z-10 border-b border-line bg-blush; }
+  .public-footer { @apply border-t border-line bg-blush; }
+  .heading-motif { @apply h-12 w-12 shrink-0 text-rose; }
+  .homepage { @apply bg-ivory; }
+
+  .media-frame { @apply relative m-0 aspect-[4/5] overflow-hidden bg-blush text-muted; }
+  .placeholder-content { @apply absolute inset-0 flex flex-col items-center justify-center gap-2 px-3 py-5 text-center; }
+  .placeholder-label { @apply text-sm font-medium; }
+  .placeholder-note { @apply max-w-52 text-xs leading-5; }
+
+  .salon-hero { @apply relative isolate flex flex-col bg-blush; }
+  .hero-content { @apply relative z-1 py-10 sm:py-14 lg:py-20; }
+  .hero-copy { @apply max-w-xl; }
+  .hero-title { @apply mt-5 font-display text-burgundy; font-size: clamp(2.6rem, 4.65vw, 4.5rem); line-height: 1.08; letter-spacing: -0.045em; text-wrap: balance; }
+  .hero-title span { text-decoration: underline; text-decoration-color: var(--color-pink); text-decoration-thickness: 0.1em; text-underline-offset: 0.09em; }
+  .hero-description { @apply mt-6 max-w-md text-base leading-7; }
+  .hero-media { @apply order-2 aspect-auto min-h-60 border-t border-line; }
+  .has-photo .hero-media { @apply min-h-80; }
+
+  .service-card { @apply relative block min-w-0 rounded-3xl bg-blush; box-shadow: 0 4px 10px #5627370d; }
+  .service-card:hover { outline: 1px solid var(--color-rose); outline-offset: 3px; }
+  .service-card-photo { @apply aspect-[4/4.5] rounded-t-3xl; }
+  .service-card-photo .placeholder-content { padding-bottom: 2.5rem; }
+  .service-card-caption { @apply relative -mt-5 grid min-h-36 grid-cols-1 items-start gap-3 rounded-3xl border border-white/60 bg-blush px-3 py-5 sm:-mt-10 sm:min-h-32 sm:grid-cols-[1.75rem_1fr] sm:px-5; }
+  .service-card-caption > svg { @apply hidden sm:block; }
+  .service-card-caption h3 { @apply pr-6; overflow-wrap: anywhere; }
+  .service-card-caption p { padding-right: 0.5rem; }
+  .service-card-arrow { @apply absolute top-5 right-3 flex size-6 items-center justify-center rounded-full border border-rose text-rose; }
+
+  .gallery-section { @apply grid items-center gap-6 pt-4 pb-16 sm:gap-12 sm:pt-8 sm:pb-24 lg:grid-cols-[1.35fr_1fr] lg:gap-20; }
+  .gallery-prints { @apply relative isolate grid min-w-0 grid-cols-3 px-2 py-6 sm:px-5 sm:py-10; }
+  .gallery-print { @apply relative rounded-2xl border-[5px] border-ivory bg-ivory sm:border-[7px]; box-shadow: 0 5px 15px #56273721; }
+  .gallery-print .media-frame { @apply aspect-[3/4] rounded-lg; }
+  .gallery-print .placeholder-label { @apply text-xs sm:text-sm; }
+  .gallery-print .placeholder-note { @apply text-[0.65rem] leading-4; }
+  .gallery-print .placeholder-content > svg { @apply hidden sm:block; }
+  .gallery-print-1 { @apply z-1 -mr-3 origin-bottom rotate-[-10deg]; }
+  .gallery-print-1::before { content: ''; position: absolute; z-index: 2; top: -14px; left: 28%; width: 48%; height: 24px; background: #eed5c0b3; transform: rotate(-8deg); }
+  .gallery-print-2 { @apply z-2 -translate-y-4 rotate-[-1deg]; }
+  .gallery-print-3 { @apply z-3 -ml-3 origin-bottom rotate-[10deg]; }
+  .gallery-bow { @apply pointer-events-none absolute bottom-0 left-[26%] z-4 h-20 w-28 text-rose sm:-bottom-2 sm:h-28 sm:w-36; }
+  .gallery-copy { @apply relative min-w-0; }
+  .gallery-sparkle { @apply absolute -top-10 right-2 h-14 w-14 text-rose sm:-left-12 sm:top-0; }
+  .gallery-copy .section-title { @apply max-w-sm text-4xl sm:text-5xl; }
+
+  .booking-band { @apply relative isolate bg-blush pt-12 pb-14 sm:pt-16 sm:pb-20; }
+  .booking-band::before, .booking-band::after { content: ''; position: absolute; z-index: -1; inset-inline: 0; height: 40px; background: var(--color-blush); }
+  .booking-band::before { top: -28px; border-radius: 50% 70% 0 0 / 100% 100% 0 0; }
+  .booking-band::after { bottom: -25px; border-radius: 0 0 65% 35% / 0 0 100% 100%; }
+  .booking-steps { @apply mt-9 grid gap-x-8 gap-y-8 sm:grid-cols-2 lg:grid-cols-4; }
+  .booking-step { @apply relative min-w-0; }
+  .step-top { @apply flex items-end gap-3; }
+  .step-number { @apply mb-1 flex size-6 items-center justify-center rounded-full bg-pink text-xs font-semibold text-burgundy; }
+  .step-icon { @apply flex size-14 items-center justify-center rounded-2xl bg-pink text-rose; }
+  .step-arrow { @apply absolute top-20 right-0 hidden text-rose lg:block; }
+  .booking-step h3, .booking-step p { @apply lg:pr-6; }
+
+  .contact-section { @apply bg-ivory pt-16 pb-12 sm:pt-20; }
+  .contact-composition { @apply grid items-center gap-8 lg:grid-cols-[0.8fr_1.6fr] lg:gap-14; }
+  .contact-photo { @apply aspect-[4/3] rounded-t-[4rem] rounded-b-2xl sm:aspect-[5/3] lg:aspect-[4/3]; }
+  .contact-links { @apply mt-7 grid gap-3 sm:grid-cols-3; }
+  .contact-tile { @apply flex h-full min-w-0 flex-wrap items-start gap-3 rounded-2xl border border-line bg-ivory px-4 py-4; box-shadow: 0 3px 8px #5627370a; }
+  a.contact-tile:hover { @apply border-rose; }
+  .contact-tile > svg { @apply mt-0.5 shrink-0 text-rose; }
+  .contact-tile .contact-label { @apply block text-sm font-semibold; }
+  .contact-tile .contact-description { @apply mt-1 block text-xs leading-5 text-muted; }
+  .contact-tile .contact-pending { @apply mt-2 block text-[0.65rem] leading-4 text-rose; }
+}
+
+/* At desktop widths, real approved hero media fills the entire stage. An opaque
+   text-side scrim keeps contrast independent of the eventual photograph. */
+@media (min-width: 1024px) {
+  .salon-hero { min-height: 540px; justify-content: center; }
+  .hero-content { pointer-events: none; }
+  .hero-copy { width: 49%; max-width: 35rem; pointer-events: auto; }
+  .hero-media { position: absolute; inset: 0; min-height: 0; border: 0; }
+  .hero-media .placeholder-content { left: 57%; }
+  .salon-hero:not(.has-photo) .hero-media { background: var(--color-blush); }
+  .salon-hero:not(.has-photo) .hero-media::before { content: ''; position: absolute; top: 0; right: 0; bottom: 0; width: 44%; background: var(--color-pink); border-radius: 45% 0 0 0; }
+  .has-photo::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, var(--color-blush) 0%, var(--color-blush) 43%, #fff1f100 76%); }
+}
+
+@layer components {
+  .prototype-notice { @apply rounded-2xl border border-line bg-blush p-5 text-sm leading-7 text-burgundy; }
+  .category-chip { @apply inline-flex min-h-11 items-center justify-center rounded-full border border-line bg-ivory px-5 py-2 text-sm text-burgundy hover:border-rose; }
+  .category-chip[aria-pressed="true"] { @apply border-rose bg-rose text-white; }
+  .catalogue-category { scroll-margin-top: 2rem; }
+  .catalogue-service { @apply flex min-w-0 flex-col rounded-3xl border border-line bg-blush/50 p-6 sm:p-7; }
+  .demo-label { @apply self-start rounded-full border border-line bg-ivory px-3 py-1 text-xs leading-5 text-rose; }
+  .service-facts { @apply mt-6 grid grid-cols-2 gap-4 border-y border-line py-4; }
+  .service-facts dt { @apply text-xs leading-5 text-muted; }
+  .service-facts dd { @apply mt-2 flex flex-wrap items-center gap-2 text-sm font-semibold text-burgundy; }
+  .empty-state { @apply rounded-2xl border border-line bg-blush p-7 text-sm leading-7 text-muted; }
+  .gallery-thumbnail { @apply relative block aspect-[4/5] w-full cursor-zoom-in overflow-hidden rounded-2xl bg-blush; }
+  .gallery-expand { @apply absolute right-4 bottom-4 flex size-10 items-center justify-center rounded-full bg-ivory text-burgundy; }
+  .gallery-lightbox { @apply fixed inset-0 m-auto max-h-[90svh] w-[calc(100%-2rem)] max-w-4xl overflow-auto rounded-2xl border border-line bg-ivory p-0 text-charcoal; }
+  .gallery-lightbox::backdrop { background: #30262bd9; }
+  .lightbox-image { @apply mx-auto block max-h-[68svh] max-w-full object-contain; }
+}
+
+@layer components {
+  .booking-panel { @apply min-w-0 rounded-3xl border border-line bg-ivory p-5 sm:p-7; }
+  .booking-progress { @apply flex min-h-14 w-full items-center gap-3 rounded-2xl border border-line px-3 py-3 text-left text-xs text-muted sm:text-sm; }
+  .booking-progress > span { @apply flex size-7 shrink-0 items-center justify-center rounded-full bg-blush text-rose; }
+  .booking-progress[aria-current="step"] { @apply border-rose bg-blush font-semibold text-burgundy; }
+  .form-label { @apply block text-sm font-medium leading-6 text-burgundy; }
+  .form-input { @apply mt-2 min-h-12 w-full rounded-xl border border-line bg-ivory px-3 py-3 text-base; }
+  .form-input[aria-invalid="true"] { @apply border-rose; }
+  .field-error { @apply mt-2 text-xs leading-5 text-rose; }
+  .booking-choice { @apply flex min-h-14 cursor-pointer items-center gap-3 rounded-xl border border-line p-3; }
+  .booking-choice:has(input:checked) { @apply border-rose bg-blush; }
+  .booking-choice input { @apply size-4 shrink-0 accent-rose; }
+  .booking-summary { @apply space-y-4; }
+  .booking-summary dt { @apply text-xs leading-5 text-muted; }
+  .booking-summary dd { @apply mt-1 text-sm leading-6 font-medium text-burgundy; }
+  button:disabled { cursor: not-allowed; opacity: 0.55; }
+}
+
+@layer components {
+  .button-primary:disabled, .button-outline:disabled { @apply cursor-not-allowed opacity-50; }
+}
+
+@layer components {
+  .manager-dialog { @apply fixed inset-0 m-auto max-h-[90svh] w-[calc(100%-2rem)] max-w-3xl overflow-auto rounded-2xl border border-line bg-ivory p-0 text-charcoal; }
+  .manager-dialog::backdrop { background: #30262bc9; }
+  .manager-icon-button { @apply flex size-11 shrink-0 items-center justify-center rounded-full border border-line; }
+  .manager-text-button { @apply inline-flex min-h-11 items-center gap-2 text-left text-xs font-medium text-rose underline-offset-4 hover:underline; }
+  .manager-table { @apply w-full min-w-[56rem] border-collapse bg-ivory text-left text-sm; }
+  .manager-table th { @apply border-b border-line bg-blush p-4 text-xs font-semibold text-burgundy; }
+  .manager-table td { @apply border-b border-line p-4 align-top leading-6; }
+  .status-badge { @apply inline-block rounded-full border border-line px-3 py-1 text-xs leading-5; }
+  .status-pending { @apply bg-[#fff2d8] text-[#6c4314]; }
+  .status-confirmed { @apply bg-[#edf3ed] text-[#315338]; }
+  .status-cancelled { @apply bg-neutral text-muted; }
+  .status-completed { @apply bg-lilac-light text-[#57376b]; }
+  .manager-week { @apply grid gap-3 sm:grid-cols-2 2xl:grid-cols-7; }
+  .calendar-entry { @apply block min-h-20 w-full rounded-lg border border-line p-3 text-left text-sm; }
+}
