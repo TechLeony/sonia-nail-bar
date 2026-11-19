@@ -226,3 +226,5 @@ Responsive code review covered homepage/header/hero/cards/contact/footer, catalo
 At widths below 768px, the homepage booking overview centers its headline, subtitle, icons/numbers and step text. All four steps stack vertically with balanced spacing and a lighter decorative background; the existing desktop four-column arrangement is retained. Footer icons wrap naturally and filter labels retain touch-sized targets and long-label wrapping.
 
 Tests cover single-group rendering/pressed semantics in TR/EN/RU, legacy anchor resolution, numerical configuration and separate eligibility, generated-image exclusion from the real gallery, icon-only footer/disabled WhatsApp, absent public Admin links, route-scroll decisions and mobile step structure. There is no available browser automation tool or installed browser in this environment. All 320/375/390/430/768/1024/1440px checks are code reviews only; actual click/scroll, history, focus and crop behavior remains to be checked manually.
+
+Created By Javanshir Aghayev
