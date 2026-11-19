@@ -8,14 +8,14 @@ export type CalendarDate = string
 export type LocalTime = string
 export type Weekday = 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday'
 
-export type ServiceCategoryId = 'manicure' | 'pedicure' | 'lashes' | 'nailArt'
+export type ServiceCategoryId = 'manicure' | 'pedicure' | 'lashes' | 'nailArt' | 'permanentMakeup' | 'skinCare' | 'laser'
 export interface ServiceCategory {
   id: ServiceCategoryId
   name: LocalizedText
   description: LocalizedText
 }
 
-export type GalleryCategoryId = ServiceCategoryId | 'salon'
+export type GalleryCategoryId = ServiceCategoryId | 'salon' | 'brows'
 export interface GalleryItem {
   id: string
   categoryId: GalleryCategoryId
@@ -61,6 +61,11 @@ export interface Appointment {
   status: AppointmentStatus
   confirmationMode: BookingConfirmationMode
   createdAt: string
+  /** Optional for legacy v1 records; never backfilled with guessed history. */
+  updatedAt?: string
+  completedAt?: string
+  cancelledAt?: string
+  servicePriceSnapshot?: { priceMinor: number | null; currency: 'TRY' }
   illustrative: boolean
 }
 

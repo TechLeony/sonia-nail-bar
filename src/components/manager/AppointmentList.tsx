@@ -19,7 +19,7 @@ export function AppointmentList({ appointments, settings, affectedIds = [], onMa
         {onManage && <button type="button" className="manager-text-button mt-4" onClick={() => onManage(entry)}>{copy.details}<span className="sr-only"> · {entry.customer.name}</span></button>}
       </article>)}
     </div>
-    {!compact && <div className="hidden overflow-x-auto rounded-2xl border border-line xl:block">
+    {!compact && <div role="region" aria-label={copy.list} tabIndex={0} className="manager-table-region hidden overflow-x-auto rounded-2xl border border-line xl:block">
       <table className="manager-table"><caption className="sr-only">{copy.list}</caption><thead><tr>{[copy.customer, copy.phone, copy.service, copy.specialist, copy.time, copy.status, ...(onManage ? [copy.details] : [])].map((label) => <th key={label} scope="col">{label}</th>)}</tr></thead>
         <tbody>{appointments.map((entry) => {
           const service = catalogueServices.find((item) => item.id === entry.serviceId)

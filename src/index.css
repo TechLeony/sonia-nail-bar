@@ -187,3 +187,140 @@
   .manager-week { @apply grid gap-3 sm:grid-cols-2 2xl:grid-cols-7; }
   .calendar-entry { @apply block min-h-20 w-full rounded-lg border border-line p-3 text-left text-sm; }
 }
+
+/* Local photographs keep the existing palette and page structure. */
+@layer components {
+  .media-caption { @apply absolute right-3 bottom-3 left-3 rounded-lg bg-ivory/95 px-3 py-2 text-xs leading-5 text-burgundy; }
+  .service-card-photo .media-caption { @apply bottom-12 text-[0.65rem] leading-4 sm:bottom-14; }
+  .has-photo .hero-media { height: clamp(320px, 78vw, 490px); margin: 0 1.25rem 2rem; border: 0; border-radius: 10rem 10rem 1.5rem 1.5rem; }
+  .booking-backdrop { @apply pointer-events-none absolute inset-0 -z-1 size-full object-cover; opacity: 0.09; }
+  .booking-band { overflow: hidden; }
+  .catalogue-category-layout { @apply grid items-start gap-5 xl:grid-cols-[0.65fr_2fr] xl:gap-7; }
+  .catalogue-category-photo { @apply aspect-[4/3] rounded-3xl sm:aspect-[2/1] xl:aspect-[3/4]; }
+}
+@media (min-width: 1024px) {
+  .has-photo .hero-media { inset: 1.5rem 3rem 1.5rem 54%; height: auto; margin: 0; border-radius: 12rem 12rem 2rem 2rem; }
+  .has-photo::after { display: none; }
+}
+
+@layer components {
+  .contact-photo-background { @apply absolute inset-0 size-full object-cover; }
+  .contact-logo { @apply absolute inset-0 m-auto h-[82%] w-[86%] object-contain; }
+  /* Keep the toes visible in both the portrait card and wider catalogue crop. */
+  #category-pedicure .catalogue-category-photo > img,
+  a[href="/services#category-pedicure"] .service-card-photo > img { object-position: center 65%; }
+}
+
+/* Responsive audit: constrain intrinsic sizes, not the page's functionality. */
+@layer base {
+  :where(main, section, article, fieldset, form, header, footer, nav, aside) { min-inline-size: 0; }
+  :where(h1, h2, h3, h4, h5, p, dt, dd, label, a, button) { overflow-wrap: anywhere; }
+  :where(input, select, textarea) { min-inline-size: 0; max-inline-size: 100%; }
+  img { max-inline-size: 100%; }
+  fieldset { margin-inline: 0; }
+}
+@layer components {
+  .page-container { padding-inline: clamp(1rem, 4vw, 3rem); }
+  .button-primary, .button-outline { max-inline-size: 100%; white-space: normal; text-align: center; }
+  .button-primary > svg, .button-outline > svg { flex-shrink: 0; }
+  .public-header .page-container { gap: 0.75rem; }
+  .public-header .brand-name { font-size: clamp(1.4rem, 4vw, 1.875rem); }
+  .public-header .brand { inline-size: max-content; min-inline-size: max-content; flex: 0 0 auto; align-self: center; }
+  .public-header .brand-name, .public-header .brand-caption { white-space: nowrap; overflow-wrap: normal; word-break: normal; flex-shrink: 0; }
+  .service-card-caption { margin-block-start: 0; min-height: 0; }
+  .service-card-photo .media-caption { bottom: 0.75rem; }
+  .service-card-caption p { padding-right: 0; }
+  .gallery-prints { padding-inline: clamp(1rem, 4vw, 2rem); }
+  .gallery-print-1 { rotate: 0deg; transform: rotate(-5deg); margin-right: -0.25rem; }
+  .gallery-print-3 { rotate: 0deg; transform: rotate(5deg); margin-left: -0.25rem; }
+  .gallery-sparkle { left: auto; right: 0; top: -2rem; width: 2.5rem; height: 2.5rem; }
+  .contact-composition { grid-template-columns: minmax(0, 1fr); }
+  .contact-links { grid-template-columns: minmax(0, 1fr); }
+  .contact-tile { min-width: 0; }
+  .contact-tile > svg:last-child { margin-left: auto; }
+  .booking-progress { align-items: flex-start; min-width: 0; }
+  .booking-progress > span:first-child { flex-shrink: 0; }
+  .booking-progress > .booking-progress-label { display: block; width: auto; height: auto; min-width: 0; border-radius: 0; background: transparent; color: inherit; font: inherit; }
+  .booking-choice > span { min-width: 0; overflow-wrap: anywhere; }
+  .form-input { display: block; min-width: 0; max-width: 100%; }
+  .booking-summary > div, .booking-summary dd { min-width: 0; overflow-wrap: anywhere; }
+  .manager-sidebar { display: flex; flex-direction: column; gap: 0.75rem; padding: 0.75rem 1rem; }
+  .manager-sidebar-top { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+  .manager-sidebar-top .brand-name { font-size: 1.5rem; }
+  .manager-sidebar-top .brand-bow { height: 1rem; }
+  .manager-sidebar-top .nav-link { max-width: 60%; }
+  .manager-sidebar-top .nav-link > svg { flex-shrink: 0; }
+  .manager-navigation { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.375rem; }
+  .manager-table-region { min-width: 0; max-width: 100%; overscroll-behavior-inline: contain; }
+  .manager-table td { max-width: 18rem; overflow-wrap: anywhere; }
+  .manager-week { grid-template-columns: minmax(0, 1fr); }
+  .manager-dialog, .gallery-lightbox { width: min(48rem, calc(100% - 1rem)); max-width: calc(100% - 1rem); max-height: calc(100svh - 1rem); max-height: calc(100dvh - 1rem); overscroll-behavior: contain; }
+  .manager-dialog > div, .lightbox-content { min-width: 0; }
+  .lightbox-image { max-height: 65svh; max-width: 100%; }
+  .menu-group { border: 1px solid var(--color-line); border-radius: 1.5rem; padding: clamp(1rem, 3vw, 2rem); background: var(--color-ivory); scroll-margin-top: 1rem; }
+  .menu-group-heading { display: flex; align-items: baseline; gap: 1rem; margin-bottom: 1.5rem; }
+  .menu-group-heading > span { flex-shrink: 0; }
+  .menu-group-heading h3 { min-width: 0; font-size: clamp(1.5rem, 4vw, 2rem); }
+  .catalogue-category + .catalogue-category { border-top: 1px solid var(--color-line); padding-top: 2rem; margin-top: 2rem; }
+  .catalogue-category-layout { grid-template-columns: minmax(0, 1fr); }
+  .catalogue-category-photo { aspect-ratio: 4 / 3; max-height: 20rem; }
+  .catalogue-brow-photo { aspect-ratio: 2 / 1; max-height: 12rem; border-radius: 1.5rem; }
+  .catalogue-service { padding: clamp(1rem, 2vw, 1.5rem); }
+  .menu-treatment-list { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.75rem; }
+  .menu-treatment { min-width: 0; border: 1px solid var(--color-line); border-radius: 1rem; padding: 1rem; background: var(--color-blush); }
+  .menu-treatment .service-facts { margin-top: 0.75rem; padding-block: 0.75rem; }
+  .menu-category-art { display: flex; align-items: center; justify-content: center; min-height: 6rem; border-radius: 1.5rem; background: linear-gradient(135deg, var(--color-blush), var(--color-lilac-light)); color: var(--color-rose); }
+}
+@media (max-width: 374px) {
+  .public-header .page-container { column-gap: 0.5rem; }
+  .public-header label > svg { display: none; }
+  .public-header select { max-width: 6rem; }
+  .public-header .brand-name { letter-spacing: 0.15em; }
+  .manager-layout main { padding-inline: 1rem; }
+}
+@media (min-width: 640px) {
+  .contact-links { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .manager-navigation { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .manager-week { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .catalogue-category-photo { aspect-ratio: 2 / 1; }
+}
+@media (min-width: 1024px) {
+  .contact-composition { grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.6fr); }
+  .contact-copy .contact-links { grid-template-columns: minmax(0, 1fr); }
+  .manager-week { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .menu-treatment-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (min-width: 1280px) {
+  .manager-sidebar { padding: 1.5rem 1rem; gap: 1.5rem; }
+  .manager-sidebar-top { flex-direction: column; align-items: flex-start; }
+  .manager-sidebar-top .nav-link { max-width: 100%; }
+  .manager-navigation { display: flex; flex-direction: column; }
+  .catalogue-category-layout { grid-template-columns: minmax(0, 0.65fr) minmax(0, 2fr); }
+  .catalogue-category-photo { aspect-ratio: 3 / 4; }
+}
+@layer components {
+  .contact-links-compact { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+  .contact-links-compact > li { min-width: 0; max-width: 100%; }
+  .contact-links-compact .contact-tile { min-height: 2.75rem; padding: 0.625rem 0.875rem; box-shadow: none; }
+}
+
+@layer components {
+  .catalogue-demo-notice { @apply rounded-xl border border-line bg-blush px-4 py-3 text-sm leading-7 text-muted; }
+  .catalogue-filters .category-chip { flex: 0 1 auto; min-width: 0; white-space: normal; text-align: center; }
+  .catalogue-filters .category-chip[aria-pressed="true"] { background: var(--color-burgundy); border-color: var(--color-burgundy); color: var(--color-ivory); }
+  #catalogue-title { scroll-margin-top: 1rem; }
+  .footer-contact-links { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1.5rem; }
+  .footer-contact-icon { display: inline-flex; align-items: center; justify-content: center; width: 2.75rem; height: 2.75rem; border-radius: 50%; border: 1px solid var(--color-line); color: var(--color-burgundy); background: var(--color-ivory); }
+  a.footer-contact-icon:hover { border-color: var(--color-rose); background: var(--color-pink); }
+  .footer-contact-icon:focus-visible { outline: 2px solid var(--color-rose); outline-offset: 4px; }
+}
+@media (max-width: 767px) {
+  .booking-band { text-align: center; }
+  .booking-band .section-title, .booking-band .page-container > p { max-width: 32rem; margin-inline: auto; }
+  .booking-steps { grid-template-columns: minmax(0, 1fr); gap: 2rem; }
+  .booking-step { display: flex; flex-direction: column; align-items: center; text-align: center; }
+  .step-top { justify-content: center; align-items: center; }
+  .step-number { margin-bottom: 0; }
+  .booking-step h3, .booking-step p { max-width: 20rem; padding-inline: 0; }
+  .booking-backdrop { opacity: 0.05; }
+}

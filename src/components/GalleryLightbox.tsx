@@ -26,7 +26,7 @@ export function GalleryLightbox({ item, onClose }: { item: GalleryItem; onClose:
       onClick={(event) => { if (event.target === event.currentTarget) onClose() }}>
       <div className="lightbox-content">
         <header className="flex items-center justify-between gap-5 border-b border-line p-4 sm:px-6">
-          <h2 id="lightbox-title" className="text-lg font-medium">{item.title[language]}</h2>
+          <h2 id="lightbox-title" className="min-w-0 text-lg font-medium">{item.title[language]}</h2>
           <button type="button" onClick={onClose} aria-label={t.catalogue.gallery.close} className="flex size-11 shrink-0 items-center justify-center rounded-full border border-line"><X size={21} aria-hidden="true" /></button>
         </header>
         {item.src && <GalleryPhoto key={item.src} src={item.src} alt={item.alt[language]} preview />}

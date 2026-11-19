@@ -3,7 +3,7 @@ import { createStorageEntry } from './storage'
 import { customerErrors, prepareAppointment } from './availability'
 import { isCalendarDate } from './bookingTime'
 import { readBookingSettings } from './salonSettingsStore'
-import { notifyPrototypeUpdate, withBookingLock } from './prototypeSync'
+import { notifyPrototypeUpdate, PROTOTYPE_UPDATED, withBookingLock } from './prototypeSync'
 import type { BookingRequest, BookingResult } from './availability'
 
 const record = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null
@@ -15,6 +15,9 @@ export function isAppointment(value: unknown): value is Appointment {
     typeof value.serviceId === 'string' && value.serviceId.length > 0 &&
     typeof value.specialistId === 'string' && value.specialistId.length > 0 &&
     timestamp(value.startsAt) && timestamp(value.endsAt) && timestamp(value.createdAt) &&
+    ['updatedAt', 'completedAt', 'cancelledAt'].every((key) => value[key] === undefined || timestamp(value[key])) &&
+    (value.servicePriceSnapshot === undefined || (record(value.servicePriceSnapshot) && value.servicePriceSnapshot.currency === 'TRY' &&
+      (value.servicePriceSnapshot.priceMinor === null || (Number.isSafeInteger(value.servicePriceSnapshot.priceMinor) && Number(value.servicePriceSnapshot.priceMinor) >= 0)))) &&
     Date.parse(value.startsAt) < Date.parse(value.endsAt) &&
     typeof customer.name === 'string' && typeof customer.phone === 'string' &&
     Object.keys(customerErrors({ name: customer.name, phone: customer.phone })).length === 0 &&
@@ -26,6 +29,19 @@ export function isAppointmentList(value: unknown): value is Appointment[] {
   return Array.isArray(value) && value.every(isAppointment) && new Set(value.map((entry) => entry.id)).size === value.length
 }
 export const appointmentStore = createStorageEntry('appointments', isAppointmentList)
+
+/** Shared by mounted operational and reporting views; return full cleanup. */
+export function subscribeToAppointmentChanges(refresh: () => void): () => void {
+  const sync = (event: StorageEvent) => { if (event.key === appointmentStore.key || event.key === null) refresh() }
+  window.addEventListener('storage', sync)
+  window.addEventListener('focus', refresh)
+  window.addEventListener(PROTOTYPE_UPDATED, refresh)
+  return () => {
+    window.removeEventListener('storage', sync)
+    window.removeEventListener('focus', refresh)
+    window.removeEventListener(PROTOTYPE_UPDATED, refresh)
+  }
+}
 
 /** Reads and validates again inside the lock, immediately before writing.
  * Web Locks serialize cooperating same-origin tabs where available. localStorage

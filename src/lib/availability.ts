@@ -1,5 +1,7 @@
-import type { Appointment, AppointmentSlot, BookingSettings, Service, WorkingHours, Weekday } from '../types/domain'
+import type { Appointment, AppointmentSlot, BookingSettings, SalonClosure, Service, WorkingHours, Weekday } from '../types/domain'
 import { addCalendarDays, bookingDates, isCalendarDate, localInstants, zonedParts } from './bookingTime'
+import { closureOnDate } from './closures'
+import { hasBookingDetails } from './catalogue'
 
 type Interval = { start: number; end: number }
 const weekdays: Weekday[] = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
@@ -45,7 +47,7 @@ export function availableSlots(input: AvailabilityInput): AppointmentSlot[] {
   const specialist = settings.specialists.find((entry) => entry.id === specialistId && entry.active && entry.serviceIds.includes(service.id))
   const step = settings.appointmentIntervalMinutes
   const duration = service.durationMinutes
-  if (!isCalendarDate(date) || !Number.isFinite(now) || !service.active || duration === null ||
+  if (!isCalendarDate(date) || !Number.isFinite(now) || !hasBookingDetails(service) || duration === null ||
     !Number.isInteger(duration) || duration < 1 || duration > 1440 || !Number.isInteger(step) || step < 1 || step > 1440 ||
     !specialist?.workingHours || settings.timeZone !== settings.salonHours.timeZone || settings.timeZone !== specialist.workingHours.timeZone ||
     !bookingDates(now, settings.timeZone, settings.bookingWindowDays).includes(date)) return []
@@ -81,6 +83,39 @@ export function availableSlots(input: AvailabilityInput): AppointmentSlot[] {
   })
 }
 
+export type BookingDayAvailability =
+  | { state: 'explicitClosure'; closure: SalonClosure; slots: AppointmentSlot[] }
+  | { state: 'available' | 'salonWeeklyClosed' | 'salonUnavailable' | 'specialistWeeklyOff' | 'specialistUnavailable' | 'fullyBooked' | 'noSlots'; slots: AppointmentSlot[] }
+
+/** Explain empty results without changing slot generation or submission rules. */
+export function bookingDayAvailability(input: AvailabilityInput): BookingDayAvailability {
+  const { date, settings, specialistId } = input
+  if (!isCalendarDate(date)) return { state: 'noSlots', slots: [] }
+  const closure = closureOnDate(settings.closures, date)
+  if (closure) return { state: 'explicitClosure', closure, slots: [] }
+  const slots = availableSlots(input)
+  if (slots.length) return { state: 'available', slots }
+  const days = [addCalendarDays(date, -1), date, addCalendarDays(date, 1)]
+  // Previous-day overnight hours may keep a nominal weekly day off bookable.
+  const touchesDate = (hours: WorkingHours) => intervals(days, hours).some((range) => zonedParts(range.start, settings.timeZone).date <= date && date <= zonedParts(range.end - 1, settings.timeZone).date)
+  const weeklyClosed = (hours: WorkingHours) => {
+    const day = hours.days[weekdays[new Date(`${date}T12:00:00Z`).getUTCDay()]]
+    return Array.isArray(day) && day.length === 0
+  }
+  if (!touchesDate(settings.salonHours)) return { state: weeklyClosed(settings.salonHours) ? 'salonWeeklyClosed' : 'salonUnavailable', slots }
+  const specialist = settings.specialists.find((entry) => entry.id === specialistId && entry.active && entry.serviceIds.includes(input.service.id))
+  if (!specialist?.workingHours) return { state: 'specialistUnavailable', slots }
+  if (!touchesDate(specialist.workingHours)) return { state: weeklyClosed(specialist.workingHours) ? 'specialistWeeklyOff' : 'specialistUnavailable', slots }
+  if (availableSlots({ ...input, appointments: [] }).length) return { state: 'fullyBooked', slots }
+  // No schedule-compatible start, as opposed to one occupied by a reservation.
+  const unreserved = { ...input, appointments: [], settings: { ...settings, closures: [] } }
+  if (!availableSlots(unreserved).length) {
+    const salonOnly = { ...unreserved, settings: { ...unreserved.settings, specialists: [{ ...specialist, workingHours: settings.salonHours }] } }
+    if (availableSlots(salonOnly).length) return { state: 'specialistUnavailable', slots }
+  }
+  return { state: 'noSlots', slots }
+}
+
 export function customerErrors(customer: { name: string; phone: string }): { name?: true; phone?: true } {
   const digits = customer.phone.replace(/\D/g, '')
   return {
@@ -105,6 +140,8 @@ export function prepareAppointment(request: BookingRequest, services: Service[],
     id, serviceId: service.id, specialistId: request.specialistId, ...slot,
     customer: { name: request.customer.name.trim(), phone: request.customer.phone.trim() },
     confirmationMode: settings.confirmationMode, status: settings.confirmationMode === 'automatic' ? 'confirmed' : 'pending',
-    createdAt: new Date(now).toISOString(), illustrative: settings.illustrative || service.illustrative || settings.specialists.some((entry) => entry.id === request.specialistId && entry.illustrative),
+    createdAt: new Date(now).toISOString(), updatedAt: new Date(now).toISOString(),
+    servicePriceSnapshot: { priceMinor: service.priceMinor, currency: service.currency },
+    illustrative: settings.illustrative || service.illustrative || settings.specialists.some((entry) => entry.id === request.specialistId && entry.illustrative),
   } }
 }

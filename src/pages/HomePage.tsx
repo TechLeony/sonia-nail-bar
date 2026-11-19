@@ -5,18 +5,19 @@ import { ContactLinks } from '../components/ContactLinks'
 import { MediaPlaceholder } from '../components/MediaPlaceholder'
 import { ServicePreviewCard } from '../components/ServicePreviewCard'
 import { bookingStepKeys, homepageMedia, servicePreviewKeys } from '../data/homepage'
+import { salonMedia } from '../data/media'
 import { useI18n } from '../hooks/useI18n'
 
 const stepIcons = { service: LayoutGrid, specialist: Users, time: CalendarDays, confirm: CircleCheck }
 
 export function HomePage() {
-  const { t } = useI18n()
+  const { t, language } = useI18n()
   const copy = t.homepage
   return (
     <div className="homepage">
       <section aria-labelledby="hero-heading" className={`salon-hero ${homepageMedia.hero ? 'has-photo' : ''}`}>
-        <MediaPlaceholder src={homepageMedia.hero} label={copy.hero.image} note={copy.hero.imageNote}
-          tone="pink" hero className="hero-media" />
+        <MediaPlaceholder src={homepageMedia.hero} label={salonMedia.editorialManicure.alt[language]} note={copy.hero.imageNote}
+          tone="pink" hero className="hero-media" caption={copy.hero.imageNote} />
         <div className="page-container hero-content">
           <div className="hero-copy">
             <p className="eyebrow flex items-center gap-3"><MapPin size={25} strokeWidth={1.5} aria-hidden="true" />{copy.hero.eyebrow}</p>
@@ -50,9 +51,9 @@ export function HomePage() {
       <section aria-labelledby="gallery-heading" className="page-container gallery-section">
         <div className="gallery-prints">
           {homepageMedia.gallery.map(({ id, src, tone }, index) => (
-            <div key={id} className={`gallery-print gallery-print-${index + 1}`}>
+            <Link to="/gallery" key={id} aria-label={`${copy.gallery.all}: ${copy.gallery[id]}`} className={`gallery-print gallery-print-${index + 1}`}>
               <MediaPlaceholder src={src} label={copy.gallery[id]} note={copy.gallery.placeholder} tone={tone} />
-            </div>
+            </Link>
           ))}
           <BrandMotif className="gallery-bow" />
         </div>
@@ -66,6 +67,7 @@ export function HomePage() {
       </section>
 
       <section aria-labelledby="process-heading" className="booking-band">
+        <img src={salonMedia.salonConcept.src} alt="" aria-hidden="true" loading="lazy" decoding="async" className="booking-backdrop" />
         <div className="page-container relative">
           <p className="eyebrow">{copy.process.eyebrow}</p>
           <h2 id="process-heading" className="section-title">{copy.process.title}</h2>
@@ -84,13 +86,16 @@ export function HomePage() {
             })}
           </ol>
           <p className="mt-8 max-w-2xl text-xs leading-5 text-muted">{copy.process.note}</p>
+          <p className="mt-2 text-xs leading-5 text-muted">{copy.process.imageNote}</p>
         </div>
       </section>
 
       <section aria-labelledby="contact-heading" className="contact-section">
         <div className="page-container contact-composition">
-          <MediaPlaceholder src={homepageMedia.contact} label={copy.contact.image} note={copy.hero.imageNote}
-            tone="pink" className="contact-photo" />
+          <figure className="media-frame bg-pink contact-photo">
+            <img src={homepageMedia.contact ?? salonMedia.floralSatin.src} alt="" aria-hidden="true" loading="lazy" decoding="async" className="contact-photo-background" />
+            <img src={salonMedia.logoConcept.src} alt={salonMedia.logoConcept.alt[language]} loading="lazy" decoding="async" className="contact-logo" />
+          </figure>
           <div className="contact-copy">
             <p className="eyebrow flex items-center gap-2"><MapPin size={18} aria-hidden="true" />{t.common.location}</p>
             <div className="flex items-center gap-4"><h2 id="contact-heading" className="section-title">{copy.contact.title}</h2><BrandMotif kind="heart" className="heading-motif" /></div>

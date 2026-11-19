@@ -1,18 +1,21 @@
 import { useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import type { Appointment, AppointmentStatus } from '../types/domain'
 import { useI18n } from '../hooks/useI18n'
 import { useBookingClock } from '../hooks/useBookingClock'
 import { useBookingSettings } from '../hooks/useBookingSettings'
 import { usePrototypeAppointments } from '../hooks/usePrototypeAppointments'
-import { affectedAppointments, appointmentTouchesDates, calendarDates, dailyMetrics, filterAppointments } from '../lib/management'
+import { affectedAppointments, appointmentTouchesDates, calendarDates, dashboardMetrics, filterAppointments } from '../lib/management'
 import { formatBookingDate, formatBookingTime, isCalendarDate, zonedParts } from '../lib/bookingTime'
 import { AppointmentList } from '../components/manager/AppointmentList'
 import { AppointmentDetails } from '../components/manager/AppointmentDetails'
 import { AppointmentEditor } from '../components/manager/AppointmentEditor'
 import { ConfirmAction } from '../components/manager/ConfirmAction'
 import { ManagerDialog } from '../components/manager/ManagerDialog'
+import { PendingAppointments } from '../components/manager/PendingAppointments'
 
 export function ManagerPage() {
+  const [params, setParams] = useSearchParams()
   const { language, t } = useI18n()
   const copy = t.manager
   const { now } = useBookingClock()
@@ -23,19 +26,27 @@ export function ManagerPage() {
   const [view, setView] = useState<'day' | 'week'>('day')
   const [status, setStatus] = useState<AppointmentStatus | 'all'>('all')
   const [specialistId, setSpecialist] = useState('')
-  const [selectedId, setSelected] = useState<string | null>(null)
+  const [selectedId, setSelected] = useState<string | null>(() => params.get('appointment'))
   const [editor, setEditor] = useState<Appointment | 'new' | null>(null)
   const [action, setAction] = useState<{ appointment: Appointment; status: 'confirmed' | 'cancelled' | 'completed' } | null>(null)
   const [saved, setSaved] = useState(false)
   const dates = calendarDates(isCalendarDate(date) ? date : today, view)
   const filtered = filterAppointments(appointments, dates, status, specialistId, settings.timeZone)
-  const metrics = dailyMetrics(appointments, today, settings.timeZone)
+  const metrics = dashboardMetrics(appointments, now, settings.timeZone)
   const affected = affectedAppointments(appointments, settings.closures, settings.timeZone)
   const affectedIds = affected.map((entry) => entry.appointment.id)
   const selected = appointments.find((entry) => entry.id === selectedId)
   const ready = storageReady && settingsReady
+  function closeDetails() {
+    setSelected(null)
+    if (params.has('appointment')) {
+      const next = new URLSearchParams(params)
+      next.delete('appointment')
+      setParams(next, { replace: true })
+    }
+  }
   function done(nextDate?: string) {
-    setEditor(null); setAction(null); setSelected(null); setSaved(true)
+    setEditor(null); setAction(null); closeDetails(); setSaved(true)
     if (nextDate) { setDate(nextDate); setView('day'); setStatus('all'); setSpecialist('') }
   }
   const statusKeys = ['pending', 'confirmed', 'cancelled', 'completed'] as const
@@ -44,9 +55,10 @@ export function ManagerPage() {
     {!ready && <p role="alert" className="prototype-notice mb-6">{t.booking.storageUnavailable}</p>}
     {saved && <p role="status" className="mb-5 text-sm text-rose">{copy.saved}</p>}
     <p className="mb-4 text-xs leading-6 text-muted">{copy.metricsNote} · {formatBookingDate(today, language, settings.timeZone, true)}</p>
-    <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">{([
+    <div aria-live="polite" aria-atomic="true" className="grid grid-cols-2 gap-3 lg:grid-cols-4">{([
       ['total', copy.today], ['pending', copy.pending], ['confirmed', copy.confirmed], ['completed', copy.completed],
     ] as const).map(([key, label]) => <section key={key} className="rounded-2xl border border-line bg-ivory p-5"><h2 className="text-xs leading-5 text-muted">{label}</h2><p className="mt-3 text-3xl font-semibold text-burgundy">{ready ? metrics[key] : '—'}</p></section>)}</div>
+    <PendingAppointments appointments={appointments} settings={settings} now={now} ready={ready} onApprove={(appointment) => stageStatus(appointment, 'confirmed')} onManage={setSelectedFromRecord} />
     {affected.length > 0 && <section className="my-8 rounded-2xl border border-rose bg-blush p-5" aria-labelledby="follow-up-heading"><h2 id="follow-up-heading" className="font-semibold text-burgundy">{copy.followUp} · {affected.length}</h2><p className="mt-3 text-sm leading-6">{copy.followUpNote}</p><div className="mt-5"><AppointmentList appointments={affected.map((entry) => entry.appointment)} settings={settings} affectedIds={affectedIds} onManage={setSelectedFromRecord} /></div></section>}
     <section aria-labelledby="calendar-heading" className="my-8 rounded-2xl border border-line bg-ivory p-5 sm:p-6">
       <h2 id="calendar-heading" className="text-xl font-semibold text-burgundy">{copy.calendar}</h2>
@@ -62,9 +74,9 @@ export function ManagerPage() {
       })}</div>
     </section>
     <section aria-labelledby="appointments-heading"><h2 id="appointments-heading" className="mb-5 text-xl font-semibold text-burgundy">{copy.list}</h2><AppointmentList appointments={filtered} settings={settings} affectedIds={affectedIds} onManage={setSelectedFromRecord} /></section>
-    {selected && <ManagerDialog title={copy.details} onClose={() => setSelected(null)}><AppointmentDetails appointment={selected} settings={settings} />
+    {selected && <ManagerDialog title={copy.details} onClose={closeDetails}><AppointmentDetails appointment={selected} settings={settings} />
       {selected.status === 'pending' || selected.status === 'confirmed' ? <div className="mt-6 space-y-4"><div className="flex flex-wrap gap-3">
-        <button type="button" className="button-outline" disabled={!ready} onClick={() => { setEditor(selected); setSelected(null) }}>{copy.edit}</button>
+        <button type="button" className="button-outline" disabled={!ready} onClick={() => { setEditor(selected); closeDetails() }}>{copy.edit}</button>
         {selected.status === 'pending' && <button type="button" className="button-primary" disabled={!ready} onClick={() => stageStatus(selected, 'confirmed')}>{copy.approve}</button>}
         <button type="button" className="button-outline" disabled={!ready} onClick={() => stageStatus(selected, 'cancelled')}>{copy.cancel}</button>
         {selected.status === 'confirmed' && <button type="button" className="button-outline" disabled={!ready || Date.parse(selected.endsAt) > now} onClick={() => stageStatus(selected, 'completed')}>{copy.complete}</button>}
@@ -74,5 +86,5 @@ export function ManagerPage() {
     {action && <ConfirmAction title={action.status === 'confirmed' ? copy.approve : action.status === 'cancelled' ? copy.cancel : copy.complete} message={action.status === 'confirmed' ? copy.approveMessage : action.status === 'cancelled' ? copy.cancelMessage : copy.completeMessage} command={{ kind: 'appointment', command: { type: 'status', expected: action.appointment, status: action.status } }} onClose={() => setAction(null)} onSaved={done}><div className="mt-5"><AppointmentDetails appointment={action.appointment} settings={settings} /></div></ConfirmAction>}
   </div>
   function setSelectedFromRecord(appointment: Appointment) { setSelected(appointment.id); setSaved(false) }
-  function stageStatus(appointment: Appointment, nextStatus: 'confirmed' | 'cancelled' | 'completed') { setSelected(null); setSaved(false); setAction({ appointment, status: nextStatus }) }
+  function stageStatus(appointment: Appointment, nextStatus: 'confirmed' | 'cancelled' | 'completed') { closeDetails(); setSaved(false); setAction({ appointment, status: nextStatus }) }
 }

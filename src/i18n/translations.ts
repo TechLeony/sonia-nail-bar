@@ -1,3 +1,4 @@
+import { trAnalytics, enAnalytics, ruAnalytics } from './analytics'
 import { trManager, enManager, ruManager } from './manager'
 import { trBooking, enBooking, ruBooking } from './booking'
 import { trCatalogue, enCatalogue, ruCatalogue } from './catalogue'
@@ -8,6 +9,7 @@ export const tr = {
   catalogue: trCatalogue,
   booking: trBooking,
   manager: trManager,
+  analytics: trAnalytics,
   nav: { home: 'Ana sayfa', services: 'Hizmetler', gallery: 'Galeri', booking: 'Randevu', admin: 'Yönetim' },
   common: {
     language: 'Dil', skip: 'İçeriğe geç', prototype: 'Ön izleme',
@@ -40,6 +42,7 @@ const en: Translations = {
   catalogue: enCatalogue,
   booking: enBooking,
   manager: enManager,
+  analytics: enAnalytics,
   nav: { home: 'Home', services: 'Services', gallery: 'Gallery', booking: 'Booking', admin: 'Manager' },
   common: {
     language: 'Language', skip: 'Skip to content', prototype: 'Preview',
@@ -68,6 +71,7 @@ const ru: Translations = {
   catalogue: ruCatalogue,
   booking: ruBooking,
   manager: ruManager,
+  analytics: ruAnalytics,
   nav: { home: 'Главная', services: 'Услуги', gallery: 'Галерея', booking: 'Запись', admin: 'Управление' },
   common: {
     language: 'Язык', skip: 'Перейти к содержимому', prototype: 'Предпросмотр',

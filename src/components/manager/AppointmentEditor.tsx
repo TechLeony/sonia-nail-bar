@@ -9,6 +9,7 @@ import { availableSlots, customerErrors } from '../../lib/availability'
 import { bookingDates, formatBookingRange, formatBookingTime, zonedParts } from '../../lib/bookingTime'
 import { executeManagerCommand } from '../../lib/managerStore'
 import type { ManagerError } from '../../lib/management'
+import { findSelectedService, isServiceBookable } from '../../lib/catalogue'
 import { ManagerDialog } from './ManagerDialog'
 import { CustomerContact } from './CustomerContact'
 
@@ -33,7 +34,7 @@ export function AppointmentEditor({ appointment, appointments, settings, onClose
   const guard = useRef(false)
   const [error, setError] = useState<ManagerError | null>(null)
   const [fields, setFields] = useState<{ name?: true; phone?: true }>({})
-  const service = catalogueServices.find((entry) => entry.id === serviceId && entry.active)
+  const service = findSelectedService(serviceId, catalogueServices, settings.specialists)
   const specialists = settings.specialists.filter((entry) => entry.active && entry.serviceIds.includes(serviceId))
   const slots = service ? availableSlots({ date, service, specialistId, settings, appointments: appointments.filter((entry) => entry.id !== appointment?.id), now }) : []
   const slot = slots.find((entry) => entry.startsAt === startsAt)
@@ -62,7 +63,7 @@ export function AppointmentEditor({ appointment, appointments, settings, onClose
         <p>{customer.name} · {customer.phone}</p>
         <p>{copy.status}: {copy.statuses[appointment?.status ?? status]}</p>
       </div> : <div className="grid gap-5 sm:grid-cols-2">
-        <div className="sm:col-span-2"><label htmlFor="manager-service" className="form-label">{t.booking.service}</label><select id="manager-service" className="form-input" value={service?.id ?? ''} onChange={(event) => { setService(event.target.value); setSpecialist(''); setStart('') }}><option value="">{t.booking.chooseService}</option>{catalogueServices.filter((entry) => entry.active).map((entry) => <option key={entry.id} value={entry.id}>{entry.name[language]}</option>)}</select></div>
+        <div className="sm:col-span-2"><label htmlFor="manager-service" className="form-label">{t.booking.service}</label><select id="manager-service" className="form-input" value={service?.id ?? ''} onChange={(event) => { setService(event.target.value); setSpecialist(''); setStart('') }}><option value="">{t.booking.chooseService}</option>{catalogueServices.filter((entry) => isServiceBookable(entry, settings.specialists)).map((entry) => <option key={entry.id} value={entry.id}>{entry.name[language]}</option>)}</select></div>
         <div><label htmlFor="manager-specialist" className="form-label">{t.booking.specialist}</label><select id="manager-specialist" className="form-input" value={specialistId} onChange={(event) => { setSpecialist(event.target.value); setStart('') }}><option value="">{t.booking.chooseSpecialist}</option>{specialists.map((entry) => <option key={entry.id} value={entry.id}>{entry.name?.[language] ?? entry.displayName}</option>)}</select></div>
         <div><label htmlFor="manager-date" className="form-label">{copy.date}</label><input type="date" id="manager-date" className="form-input" value={date} min={dates[0]} max={dates[dates.length - 1]} onChange={(event) => { setDate(event.target.value); setStart('') }} /></div>
         <div className="sm:col-span-2"><label htmlFor="manager-time" className="form-label">{t.booking.slot}</label><select id="manager-time" className="form-input" value={slot?.startsAt ?? ''} onChange={(event) => setStart(event.target.value)}><option value="">{t.booking.slot}</option>{slots.map((entry) => <option key={entry.startsAt} value={entry.startsAt}>{formatBookingTime(entry.startsAt, language, settings.timeZone)}</option>)}</select>{service && specialistId && !slots.length && <p role="status" className="mt-2 text-xs leading-6 text-rose">{t.booking.noSlots}</p>}</div>

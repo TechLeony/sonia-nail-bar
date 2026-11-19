@@ -34,7 +34,7 @@ function render(language) {
 }
 
 for (const language of ['tr', 'en', 'ru']) {
-  test(`homepage renders translated sections, navigation and honest placeholders in ${language}`, () => {
+  test(`homepage renders translated sections, navigation and local imagery in ${language}`, () => {
     const html = render(language)
     const copy = dictionaries.translations[language].homepage
     assert.equal((html.match(/<h1\b/g) ?? []).length, 1)
@@ -46,17 +46,26 @@ for (const language of ['tr', 'en', 'ru']) {
       copy.services.note, copy.process.note, copy.contact.pending]) {
       assert.ok(html.includes(text), `Missing translated content: ${text}`)
     }
-    for (const route of ['/booking', '/services', '/gallery', '/admin']) {
+    for (const route of ['/booking', '/services', '/gallery']) {
       assert.ok(html.includes(`href="${route}"`))
     }
     assert.ok(html.includes('aria-expanded="false"'))
     assert.ok(html.includes('aria-controls="mobile-navigation"'))
     assert.ok(html.includes('href="#main-content"'))
     assert.equal((html.match(/<option\b/g) ?? []).length, 3)
-    assert.equal((html.match(/<li\b/g) ?? []).length, 7) // 4 steps, 3 contact placeholders
+    assert.equal((html.match(/<li\b/g) ?? []).length, 10) // 4 steps and 3 contact actions in both main content and footer
     assert.ok(!html.includes('href="#"'))
-    assert.ok(!html.includes('<img')) // No invented salon photography
-    assert.ok(!/href="(?:https?:|tel:|mailto:)/.test(html)) // No unverified external destinations
+    assert.ok(html.includes('<img'))
+    assert.ok(html.includes(copy.hero.imageNote))
+    const contact = html.slice(html.indexOf('<section aria-labelledby="contact-heading"'))
+    assert.ok(contact.includes('class="contact-photo-background"'))
+    assert.ok(contact.includes('class="contact-logo"'))
+    assert.ok(!contact.includes('<figcaption'))
+    assert.ok(!contact.includes(copy.contact.imageNote))
+    for (const item of data.homepageMedia.gallery) assert.ok(html.includes(`src="${item.src}"`))
+    assert.ok(html.includes('href="https://www.instagram.com/sonianailbar/"'))
+    assert.ok(html.includes('href="https://maps.app.goo.gl/8shwzBbxc6r11YgHA"'))
+    assert.ok(!html.includes('https://wa.me/'))
   })
 }
 
@@ -76,6 +85,7 @@ test('every language has the same nonempty translation keys', () => {
 })
 
 test('configured verified contact URLs render as external links', () => {
+  const previous = data.contactLinks.instagram
   // A reserved example domain tests the future configured-link branch only;
   // it never becomes application content or a claimed salon account.
   try {
@@ -83,13 +93,14 @@ test('configured verified contact URLs render as external links', () => {
     const html = render('en')
     assert.ok(html.includes('href="https://example.com/verified-link-test"'))
     assert.ok(html.includes('rel="noopener noreferrer"'))
-    assert.equal((html.match(/Link awaiting verification/g) ?? []).length, 2)
+    assert.ok(html.includes('Link awaiting verification'))
   } finally {
-    data.contactLinks.instagram = null
+    data.contactLinks.instagram = previous
   }
 })
 
-test('approved media configuration renders real image elements with loading priorities', () => {
+test('media configuration renders real image elements with loading priorities', () => {
+  const previous = { hero: data.homepageMedia.hero, lashes: data.homepageMedia.services.lashes, contact: data.homepageMedia.contact }
   try {
     data.homepageMedia.hero = '/approved-test/hero.webp'
     data.homepageMedia.services.lashes = '/approved-test/lashes.webp'
@@ -100,10 +111,10 @@ test('approved media configuration renders real image elements with loading prio
     assert.match(html, /<img[^>]+src="\/approved-test\/lashes.webp"[^>]+loading="lazy"/)
     assert.match(html, /<img[^>]+src="\/approved-test\/interior.webp"[^>]+loading="lazy"/)
     assert.ok(!html.includes('homepage-reference.png'))
-    assert.ok(html.includes('Photo coming soon')) // Other slots remain clearly marked
+    assert.ok(!html.includes('Photo coming soon')) // All configured slots now have local images
   } finally {
-    data.homepageMedia.hero = null
-    data.homepageMedia.services.lashes = null
-    data.homepageMedia.contact = null
+    data.homepageMedia.hero = previous.hero
+    data.homepageMedia.services.lashes = previous.lashes
+    data.homepageMedia.contact = previous.contact
   }
 })

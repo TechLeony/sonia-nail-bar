@@ -22,11 +22,12 @@ export function applyAppointmentCommand(command: AppointmentCommand, appointment
   if (JSON.stringify(current) !== JSON.stringify(command.expected)) return { ok: false, error: 'stale' }
   if (current.status !== 'pending' && current.status !== 'confirmed') return { ok: false, error: 'transition' }
   let updated: Appointment
-  if (command.type === 'status' && command.status === 'cancelled') updated = { ...current, status: 'cancelled' }
+  const updatedAt = new Date(now).toISOString()
+  if (command.type === 'status' && command.status === 'cancelled') updated = { ...current, status: 'cancelled', cancelledAt: updatedAt, updatedAt }
   else if (command.type === 'status' && command.status === 'completed') {
     if (current.status !== 'confirmed') return { ok: false, error: 'transition' }
     if (Date.parse(current.endsAt) > now) return { ok: false, error: 'tooEarly' }
-    updated = { ...current, status: 'completed' }
+    updated = { ...current, status: 'completed', completedAt: updatedAt, updatedAt }
   } else {
     if (command.type === 'status' && (command.status !== 'confirmed' || current.status !== 'pending')) return { ok: false, error: 'transition' }
     // Existing customer identity always comes from the stored record, never
@@ -38,9 +39,13 @@ export function applyAppointmentCommand(command: AppointmentCommand, appointment
     const validationServices = command.type === 'status' ? services.map((entry) => entry.id === current.serviceId ? { ...entry, durationMinutes: (Date.parse(current.endsAt) - Date.parse(current.startsAt)) / 60_000 } : entry) : services
     const prepared = prepareAppointment(request, validationServices, settings, appointments.filter((entry) => entry.id !== current.id), now, current.id)
     if (!prepared.ok) return prepared
-    updated = { ...prepared.appointment, id: current.id, createdAt: current.createdAt, confirmationMode: current.confirmationMode,
+    const { servicePriceSnapshot, ...preparedFields } = prepared.appointment
+    updated = { ...current, ...preparedFields, id: current.id, createdAt: current.createdAt, updatedAt, confirmationMode: current.confirmationMode,
       status: command.type === 'edit' ? current.status : 'confirmed',
       customer: { ...current.customer },
+      // Keep the booked price on approval/reschedule; a different service gets
+      // its own current price. Legacy same-service records stay unsnapshotted.
+      ...(current.serviceId !== prepared.appointment.serviceId ? { servicePriceSnapshot } : {}),
     }
   }
   return { ok: true, value: appointments.map((entry) => entry.id === current.id ? updated : entry) }
@@ -57,12 +62,17 @@ export function affectedAppointments(appointments: Appointment[], closures: Salo
     return closureIds.length ? [{ appointment, closureIds }] : []
   })
 }
-export function dailyMetrics(appointments: Appointment[], date: string, zone: string) {
+export function dashboardMetrics(appointments: Appointment[], now: number, zone: string) {
+  const date = zonedParts(now, zone).date
   const today = appointments.filter((entry) => zonedParts(Date.parse(entry.startsAt), zone).date === date)
   return { total: today.filter((entry) => entry.status !== 'cancelled').length,
-    pending: today.filter((entry) => entry.status === 'pending').length,
-    confirmed: today.filter((entry) => entry.status === 'confirmed').length,
-    completed: today.filter((entry) => entry.status === 'completed').length }
+    pending: appointments.filter((entry) => entry.status === 'pending').length,
+    confirmed: appointments.filter((entry) => entry.status === 'confirmed').length,
+    completed: appointments.filter((entry) => entry.status === 'completed').length }
+}
+export function pendingAppointments(appointments: Appointment[], now: number) {
+  const pending = appointments.filter((entry) => entry.status === 'pending').sort((a, b) => Date.parse(a.startsAt) - Date.parse(b.startsAt) || a.id.localeCompare(b.id))
+  return { upcoming: pending.filter((entry) => Date.parse(entry.startsAt) > now), past: pending.filter((entry) => Date.parse(entry.startsAt) <= now) }
 }
 export function calendarDates(date: string, view: 'day' | 'week'): string[] {
   if (!isCalendarDate(date)) return []

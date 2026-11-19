@@ -3,6 +3,7 @@ import { Menu, X, ArrowUpRight } from 'lucide-react'
 import { NavLink, Outlet, Link, useLocation } from 'react-router-dom'
 import { Brand } from '../components/Brand'
 import { LanguageSelector } from '../components/LanguageSelector'
+import { ContactLinks } from '../components/ContactLinks'
 import { useI18n } from '../hooks/useI18n'
 
 export function PublicLayout() {
@@ -26,7 +27,7 @@ export function PublicLayout() {
       }}>
         <div className="page-container flex flex-wrap items-center justify-between gap-4 py-3">
           <Brand />
-          <nav aria-label={t.homepage.navigation} className="hidden items-center gap-7 lg:flex">{navLinks}</nav>
+          <nav aria-label={t.homepage.navigation} className="hidden items-center gap-7 xl:flex">{navLinks}</nav>
           <div className="flex items-center gap-3 sm:gap-5">
             <LanguageSelector />
             <Link to="/booking" onClick={() => setMenuOpen(false)} className="button-primary hidden sm:inline-flex">
@@ -34,7 +35,7 @@ export function PublicLayout() {
             </Link>
             <button type="button" ref={menuButton} aria-expanded={menuOpen} aria-controls="mobile-navigation"
               aria-label={menuOpen ? t.homepage.closeMenu : t.homepage.openMenu}
-              className="flex size-11 items-center justify-center rounded-full border border-line lg:hidden"
+              className="flex size-11 items-center justify-center rounded-full border border-line xl:hidden"
               onClick={() => setMenuOpen(!menuOpen)}>
               {menuOpen ? <X size={20} aria-hidden="true" /> : <Menu size={20} aria-hidden="true" />}
             </button>
@@ -43,7 +44,7 @@ export function PublicLayout() {
             {t.homepage.book}<ArrowUpRight size={17} aria-hidden="true" />
           </Link>
           <nav id="mobile-navigation" aria-label={t.homepage.navigation} hidden={!menuOpen}
-            className="w-full border-t border-line pt-3 lg:hidden">
+            className="w-full border-t border-line pt-3 xl:hidden">
             <div className="flex flex-col items-start gap-1">{navLinks}</div>
           </nav>
         </div>
@@ -62,9 +63,9 @@ export function PublicLayout() {
               <Link to="/booking" className="nav-link">{t.nav.booking}</Link>
             </nav>
           </div>
+          <ContactLinks compact />
           <div className="mt-8 flex flex-col justify-between gap-3 border-t border-line pt-5 text-xs leading-6 text-muted sm:flex-row">
             <p>© Sonia Nail Bar · {t.homepage.footer.prototype}</p>
-            <Link className="nav-link self-start text-xs" to="/admin">{t.nav.admin}</Link>
           </div>
         </div>
       </footer>

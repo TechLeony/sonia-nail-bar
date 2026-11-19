@@ -1,4 +1,12 @@
-import type { Language, Service } from '../types/domain'
+import type { Language, Service, Specialist } from '../types/domain'
+
+export function hasBookingDetails(service: Service): boolean {
+  return service.active && Number.isInteger(service.durationMinutes) && Number(service.durationMinutes) > 0 && Number(service.durationMinutes) <= 1440 &&
+    service.priceMinor !== null && Number.isSafeInteger(service.priceMinor) && service.priceMinor >= 0
+}
+export function isServiceBookable(service: Service, specialists: Specialist[]): boolean {
+  return hasBookingDetails(service) && specialists.some((specialist) => specialist.active && !!specialist.workingHours && specialist.serviceIds.includes(service.id))
+}
 
 const locales: Record<Language, string> = { tr: 'tr-TR', en: 'en-GB', ru: 'ru-RU' }
 
@@ -12,6 +20,6 @@ export function serviceBookingHref(serviceId: string): string {
 }
 
 /** A URL preference is not a reservation. Unknown/inactive IDs are rejected. */
-export function findSelectedService(id: string | null, services: Service[]): Service | undefined {
-  return id === null ? undefined : services.find((service) => service.id === id && service.active)
+export function findSelectedService(id: string | null, services: Service[], specialists?: Specialist[]): Service | undefined {
+  return id === null ? undefined : services.find((service) => service.id === id && (specialists ? isServiceBookable(service, specialists) : hasBookingDetails(service)))
 }

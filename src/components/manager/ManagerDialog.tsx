@@ -18,7 +18,7 @@ export function ManagerDialog({ title, onClose, children, busy = false }: { titl
     onCancel={(event) => { event.preventDefault(); if (!busy) onClose() }}
     onClick={(event) => { if (!busy && event.target === event.currentTarget) onClose() }}>
     <div className="p-5 sm:p-7">
-      <header className="mb-6 flex items-center justify-between gap-5"><h2 id={titleId} className="text-xl font-semibold text-burgundy">{title}</h2><button type="button" className="manager-icon-button" disabled={busy} onClick={onClose} aria-label={t.manager.close}><X size={20} aria-hidden="true" /></button></header>
+      <header className="mb-6 flex items-center justify-between gap-5"><h2 id={titleId} className="min-w-0 text-xl font-semibold text-burgundy">{title}</h2><button type="button" className="manager-icon-button" disabled={busy} onClick={onClose} aria-label={t.manager.close}><X size={20} aria-hidden="true" /></button></header>
       {children}
     </div>
   </dialog>

@@ -1,5 +1,10 @@
 import type { TranslationShape } from './translations'
 export const trBooking = {
+  availability: {
+    explicitClosure: 'Bu tarihte salon kapalıdır.', salonWeeklyClosed: 'Salon, haftalık çalışma düzenine göre bu gün kapalıdır.', salonUnavailable: 'Bu gün için salonun çalışma saatleri henüz belirlenmemiştir.',
+    specialistWeeklyOff: 'Seçtiğiniz uzman bu gün haftalık izinlidir. Başka bir gün veya uzman seçin.', specialistUnavailable: 'Seçtiğiniz uzmanın bu hizmet için uygun çalışma saati yok. Başka bir gün veya uzman seçin.',
+    fullyBooked: 'Seçtiğiniz uzmanın bu gün uygun saatlerinin tamamı dolu. Başka bir gün veya uzman seçin.', noSlots: 'Bu hizmet için bu gün uygun başlangıç saati yok. Başka bir gün veya uzman seçin.',
+  },
   title: 'Kendinize zaman ayırın.', eyebrow: 'Randevu · Prototip', description: 'Hizmetinizi, uzmanınızı ve uygun bir zamanı seçin.',
   notice: 'Yalnızca tarayıcı içi demo. Hizmetler, uzmanlar, saatler ve fiyatlar örnektir. Gerçek randevu oluşturulmaz. Lütfen hayali ad ve telefon kullanın; bu bilgiler bu tarayıcıda şifrelenmeden saklanır.',
   progress: 'Randevu adımları', service: 'Hizmet', specialist: 'Uzman', time: 'Tarih ve saat', customer: 'Bilgiler ve onay',
@@ -19,6 +24,11 @@ export const trBooking = {
 }
 type BookingCopy = TranslationShape<typeof trBooking>
 export const enBooking: BookingCopy = {
+  availability: {
+    explicitClosure: 'The salon is closed on this date.', salonWeeklyClosed: 'The salon is closed on this day under its weekly schedule.', salonUnavailable: 'Salon working hours have not been set for this day.',
+    specialistWeeklyOff: 'Your selected specialist has a weekly day off on this day. Choose another day or specialist.', specialistUnavailable: 'Your selected specialist has no suitable working hours for this service. Choose another day or specialist.',
+    fullyBooked: 'All suitable times for your selected specialist are booked on this day. Choose another day or specialist.', noSlots: 'No start times fit this service on this day. Choose another day or specialist.',
+  },
   title: 'Make a little time for you.', eyebrow: 'Booking · Prototype', description: 'Choose your service, specialist and an available time.',
   notice: 'Browser-only demo. Services, specialists, schedules and prices are illustrative. No real appointment is made. Use fictional names and phone numbers; these details are stored unencrypted in this browser.',
   progress: 'Booking steps', service: 'Service', specialist: 'Specialist', time: 'Date & time', customer: 'Details & review',
@@ -37,6 +47,11 @@ export const enBooking: BookingCopy = {
   errors: { name: 'Enter a name with 2–80 characters.', phone: 'Enter a valid phone with 8–15 digits.', customer: 'Check the name and phone details.', selection: 'Check your service, specialist, date and time selection.', unavailable: 'This time is no longer available. Please choose a time again.', storage: 'The booking could not be saved. Check browser storage and try again.', configuration: 'Booking settings are invalid. Please try again later.' },
 }
 export const ruBooking: BookingCopy = {
+  availability: {
+    explicitClosure: 'В этот день салон закрыт.', salonWeeklyClosed: 'В этот день салон закрыт по еженедельному расписанию.', salonUnavailable: 'Часы работы салона на этот день ещё не заданы.',
+    specialistWeeklyOff: 'У выбранного специалиста в этот день еженедельный выходной. Выберите другой день или специалиста.', specialistUnavailable: 'У выбранного специалиста нет подходящих рабочих часов для этой услуги. Выберите другой день или специалиста.',
+    fullyBooked: 'Всё подходящее время выбранного специалиста на этот день уже занято. Выберите другой день или специалиста.', noSlots: 'На этот день нет подходящего времени начала услуги. Выберите другой день или специалиста.',
+  },
   title: 'Найдите время для себя.', eyebrow: 'Запись · Прототип', description: 'Выберите услугу, специалиста и удобное время.',
   notice: 'Демо только в браузере. Услуги, специалисты, расписание и цены приведены для примера. Реальная запись не создаётся. Используйте вымышленные имя и телефон: данные хранятся в этом браузере без шифрования.',
   progress: 'Шаги записи', service: 'Услуга', specialist: 'Специалист', time: 'Дата и время', customer: 'Данные и проверка',

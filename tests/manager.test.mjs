@@ -60,7 +60,7 @@ test('approval excludes itself and preserves ID, start/end, creation time and ot
   const adjacent = booking('11:00', 'confirmed', 'adjacent')
   const result = apply({ type: 'status', expected: original, status: 'confirmed' }, [original, adjacent])
   assert.ok(result.ok)
-  assert.deepEqual(result.value[0], { ...original, status: 'confirmed' })
+  assert.deepEqual(result.value[0], { ...original, status: 'confirmed', updatedAt: new Date(now).toISOString() })
   assert.deepEqual(result.value[1], adjacent)
   assert.equal(original.status, 'pending') // pure operation, no mutation
 })
@@ -132,9 +132,9 @@ test('closure notifications deduplicate active bookings, include overnight overl
   assert.deepEqual(affected[0].closureIds, ['closure-one', 'closure-two'])
   assert.equal(overnight.status, 'pending')
 })
-test('daily metrics use local start dates; calendar and list filters are chronological and overnight-aware', () => {
+test('dashboard today total uses local start dates; calendar and list filters are chronological and overnight-aware', () => {
   const records = [booking('13:00', 'confirmed', 'third'), booking('11:00', 'completed', 'second'), booking('10:00', 'pending', 'first'), booking('12:00', 'cancelled', 'cancelled')]
-  assert.deepEqual(management.dailyMetrics(records, date, 'Europe/Istanbul'), { total: 3, pending: 1, confirmed: 1, completed: 1 })
+  assert.deepEqual(management.dashboardMetrics(records, now, 'Europe/Istanbul'), { total: 3, pending: 1, confirmed: 1, completed: 1 })
   const week = management.calendarDates('2026-11-18', 'week')
   assert.equal(week[0], date); assert.equal(week.at(-1), '2026-11-22')
   assert.equal(management.filterAppointments(records, [date], 'pending', '', 'Europe/Istanbul').length, 1)
@@ -142,7 +142,7 @@ test('daily metrics use local start dates; calendar and list filters are chronol
   assert.equal(management.filterAppointments(records, [date], 'all', 'unknown', 'Europe/Istanbul').length, 0)
   const overnight = { ...booking(), startsAt: at('23:30', '2026-11-15'), endsAt: at('00:30') }
   assert.ok(management.appointmentTouchesDates(overnight, date, date, 'Europe/Istanbul'))
-  assert.equal(management.dailyMetrics([overnight], date, 'Europe/Istanbul').total, 0)
+  assert.equal(management.dashboardMetrics([overnight], now, 'Europe/Istanbul').total, 0)
 })
 test('WhatsApp links require explicit international numbers and never guess country codes', () => {
   assert.equal(management.customerWhatsAppHref('+90 (555) 123-45-67'), 'https://wa.me/905551234567')

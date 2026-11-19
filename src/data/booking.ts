@@ -1,6 +1,6 @@
 import type { BookingSettings, Specialist, WorkingHours } from '../types/domain'
 import { salonConfig, workingHours } from './salon'
-import { catalogueServices } from './services'
+import { catalogueServices, demoBookingServiceIds } from './services'
 
 // Fictional demo identities and schedules. Replace only with approved details.
 const demoHours = (): WorkingHours => structuredClone(workingHours)
@@ -8,13 +8,13 @@ export const bookingSpecialists: Specialist[] = [
   {
     id: 'demo-specialist-a', displayName: 'Demo specialist A',
     name: { tr: 'Örnek uzman A', en: 'Demo specialist A', ru: 'Демо-специалист A' },
-    serviceIds: catalogueServices.map((service) => service.id),
+    serviceIds: [...demoBookingServiceIds],
     active: true, illustrative: true, workingHours: demoHours(),
   },
   {
     id: 'demo-specialist-b', displayName: 'Demo specialist B',
     name: { tr: 'Örnek uzman B', en: 'Demo specialist B', ru: 'Демо-специалист B' },
-    serviceIds: catalogueServices.filter((service) => service.categoryId !== 'lashes').map((service) => service.id),
+    serviceIds: catalogueServices.filter((service) => demoBookingServiceIds.some((id) => id === service.id) && service.categoryId !== 'lashes').map((service) => service.id),
     active: true, illustrative: true,
     workingHours: {
       timeZone: 'Europe/Istanbul',

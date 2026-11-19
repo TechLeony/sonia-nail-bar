@@ -3,6 +3,7 @@ import type { FormEvent } from 'react'
 import { ArrowRight } from 'lucide-react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { BookingSuccess } from '../components/BookingSuccess'
+import { BookingAvailabilityMessage } from '../components/BookingAvailabilityMessage'
 import { PageIntro } from '../components/PageIntro'
 import { ServiceFacts } from '../components/ServiceFacts'
 import { catalogueServices } from '../data/services'
@@ -10,11 +11,11 @@ import { useI18n } from '../hooks/useI18n'
 import { usePrototypeAppointments } from '../hooks/usePrototypeAppointments'
 import { useBookingClock } from '../hooks/useBookingClock'
 import { useBookingSettings } from '../hooks/useBookingSettings'
-import { availableSlots, customerErrors } from '../lib/availability'
+import { bookingDayAvailability, customerErrors } from '../lib/availability'
 import type { BookingError } from '../lib/availability'
 import { submitPrototypeBooking } from '../lib/appointmentStore'
 import { bookingDates, formatBookingDate, formatBookingTime, formatBookingRange } from '../lib/bookingTime'
-import { findSelectedService } from '../lib/catalogue'
+import { findSelectedService, isServiceBookable } from '../lib/catalogue'
 import type { Appointment } from '../types/domain'
 
 export function BookingPage() {
@@ -27,7 +28,7 @@ function BookingFlow({ serviceId, onServiceChange }: { serviceId: string | null;
   const { language, t } = useI18n()
   const copy = t.booking
   const { settings: bookingSettings, settingsReady } = useBookingSettings()
-  const service = findSelectedService(serviceId, catalogueServices)
+  const service = findSelectedService(serviceId, catalogueServices, bookingSettings.specialists)
   const [step, setStep] = useState(0)
   const [specialistId, setSpecialistId] = useState('')
   const [date, setDate] = useState('')
@@ -49,7 +50,8 @@ function BookingFlow({ serviceId, onServiceChange }: { serviceId: string | null;
   const specialists = bookingSettings.specialists.filter((entry) => entry.active && !!service && entry.serviceIds.includes(service.id))
   const specialist = specialists.find((entry) => entry.id === specialistId)
   const dates = bookingDates(now, bookingSettings.timeZone, bookingSettings.bookingWindowDays)
-  const slots = service && storageReady && settingsReady ? availableSlots({ date, service, specialistId, settings: bookingSettings, appointments, now }) : []
+  const dayAvailability = service && date && storageReady && settingsReady ? bookingDayAvailability({ date, service, specialistId, settings: bookingSettings, appointments, now }) : null
+  const slots = dayAvailability?.slots ?? []
   const slot = slots.find((entry) => entry.startsAt === startsAt)
   const steps = [copy.service, copy.specialist, copy.time, copy.customer]
   const canContinue = step === 0 ? !!service && service.durationMinutes !== null : step === 1 ? !!specialist : !!slot
@@ -90,21 +92,21 @@ function BookingFlow({ serviceId, onServiceChange }: { serviceId: string | null;
         <ol className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {steps.map((label, index) => <li key={index}>
             <button type="button" className="booking-progress" disabled={index > step || saving} aria-current={index === step ? 'step' : undefined} onClick={() => move(index)}>
-              <span aria-hidden="true">{index + 1}</span>{label}
+              <span aria-hidden="true">{index + 1}</span><span className="booking-progress-label">{label}</span>
             </button>
           </li>)}
         </ol>
       </nav>
-      <div className="grid items-start gap-7 lg:grid-cols-[1.5fr_1fr]">
+      <div className="grid items-start gap-7 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
         <form noValidate onSubmit={submit} aria-busy={saving} className="booking-panel">
           <h2 ref={heading} tabIndex={-1} className="font-display text-3xl text-burgundy">{steps[step]}</h2>
           {(!storageReady || !settingsReady) && <p role="alert" className="mt-5 text-sm leading-6 text-rose">{copy.storageUnavailable}</p>}
-          {error && <p ref={errorSummary} tabIndex={-1} role="alert" className="mt-5 text-sm leading-6 text-rose">{copy.errors[error]}</p>}
+          {error && !(error === 'unavailable' && dayAvailability?.state === 'explicitClosure') && <p ref={errorSummary} tabIndex={-1} role="alert" className="mt-5 text-sm leading-6 text-rose">{copy.errors[error]}</p>}
           {step === 0 && <div className="mt-6">
             <label className="form-label" htmlFor="booking-service">{copy.chooseService}</label>
             <select id="booking-service" value={service?.id ?? ''} className="form-input" onChange={(event) => onServiceChange(event.target.value)}>
               <option value="">{copy.chooseService}</option>
-              {catalogueServices.filter((entry) => entry.active).map((entry) => <option key={entry.id} value={entry.id}>{entry.name[language]}</option>)}
+              {catalogueServices.filter((entry) => isServiceBookable(entry, bookingSettings.specialists)).map((entry) => <option key={entry.id} value={entry.id}>{entry.name[language]}</option>)}
             </select>
             {!service && <p className="mt-4 text-sm leading-6 text-muted">{serviceId === null ? t.catalogue.booking.noSelection : t.catalogue.booking.invalid}</p>}
             <Link to="/services" className="text-link mt-4">{t.catalogue.booking.choose}</Link>
@@ -128,7 +130,7 @@ function BookingFlow({ serviceId, onServiceChange }: { serviceId: string | null;
               </div>
             </fieldset>
             <fieldset className="mt-7"><legend className="form-label">{copy.slot}</legend>
-              {!date ? <p className="mt-3 text-sm text-muted">{copy.chooseDate}</p> : slots.length === 0 ? <p role="status" className="empty-state mt-3">{copy.noSlots}</p> : (
+              {!date ? <p className="mt-3 text-sm text-muted">{copy.chooseDate}</p> : slots.length === 0 ? dayAvailability && <BookingAvailabilityMessage availability={dayAvailability} /> : (
                 <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3">
                   {slots.map((entry) => <label key={entry.startsAt} className="booking-choice">
                     <input type="radio" name="time" value={entry.startsAt} checked={startsAt === entry.startsAt} onChange={() => { setStartsAt(entry.startsAt); setError(null) }} />
@@ -139,7 +141,7 @@ function BookingFlow({ serviceId, onServiceChange }: { serviceId: string | null;
             </fieldset>
           </div>}
           {step === 3 && <div className="mt-6 space-y-6">
-            {!slot && <div role="alert"><p className="text-sm text-rose">{copy.errors.unavailable}</p><button type="button" className="text-link mt-3" onClick={() => move(2)}>{copy.slot}</button></div>}
+            {!slot && <div>{dayAvailability && dayAvailability.state !== 'available' ? <BookingAvailabilityMessage availability={dayAvailability} /> : <p role="alert" className="text-sm text-rose">{copy.errors.unavailable}</p>}<button type="button" className="text-link mt-3" onClick={() => move(2)}>{copy.slot}</button></div>}
             <div><label htmlFor="customer-name" className="form-label">{copy.name}</label>
               <input ref={nameInput} id="customer-name" autoComplete="off" disabled={saving} maxLength={80} required value={customer.name} className="form-input" aria-invalid={!!fields.name} aria-describedby={fields.name ? 'name-error' : undefined} onChange={(event) => setCustomer({ ...customer, name: event.target.value })} />
               {fields.name && <p id="name-error" role="alert" className="field-error">{copy.errors.name}</p>}
